@@ -70,7 +70,7 @@ class Blockchain(object):
     @property
     def last_block(self):
         # Returns the last Block in the chain
-        pass
+        return self.chain[-1]
 
     def new_transaction(self, sender, recipient, amount):
         """

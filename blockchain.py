@@ -1,12 +1,12 @@
 import hashlib
 import json
 import requests
-from textwrap import dedent
 from urllib.parse import urlparse
 from time import time
 from uuid import uuid4
 
 from flask import Flask, jsonify, request
+
 
 class Blockchain(object):
     def __init__(self):
@@ -49,7 +49,7 @@ class Blockchain(object):
 
         self.chain.append(block)
         return block
-    
+
     def new_transaction(self, sender, recipient, amount):
         # Adds a new transaction to the list of transactions
         """
@@ -64,9 +64,9 @@ class Blockchain(object):
             'recipient': recipient,
             'amount': amount,
         })
-        
+
         return self.last_block['index'] + 1
-    
+
     @staticmethod
     def hash(block):
         # Hashes a Block
@@ -75,7 +75,7 @@ class Blockchain(object):
         :param block: <dict> Block
         :return: <str>
         """
-        
+
         # We must make sure that the Dictionary is Ordered, or we'll have inconsistent hashes
         block_string = json.dumps(block, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
@@ -148,7 +148,7 @@ class Blockchain(object):
             # Check that the hash of the block is correct
             if block['previous_hash'] != self.hash(last_block):
                 return False
-            
+
             # Check that the Proof of Work is correct
             if not self.valid_proof(last_block['proof'], block['proof']):
                 return False
@@ -191,6 +191,7 @@ class Blockchain(object):
 
         return False
 
+
 # Instantiate our Node
 app = Flask(__name__)
 
@@ -228,21 +229,24 @@ def mine():
         'previous_hash': block['previous_hash'],
     }
     return jsonify(response), 200
-  
+
+
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
     values = request.get_json()
 
     # Check that the required fields are in the POST'ed data
     required = ['sender', 'recipient', 'amount']
-    if not all (k in values for k in required):
+    if not all(k in values for k in required):
         return 'Missing values', 400
 
     # Create a new Transaction
-    index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
+    index = blockchain.new_transaction(
+        values['sender'], values['recipient'], values['amount'])
 
     response = {'message': f'Transaction will be added to Block {index}'}
     return jsonify(response), 201
+
 
 @app.route('/chain', methods=['GET'])
 def full_chain():
@@ -252,8 +256,10 @@ def full_chain():
     }
     return jsonify(response), 200
 
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
 
 @app.route('/nodes/register', methods=['POST'])
 def register_nodes():
